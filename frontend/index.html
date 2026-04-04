@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f4f0;
+      --card: #ffffff;
+      --border: #e8e6e0;
+      --text: #1a1a18;
+      --muted: #8a8880;
+      --green: #2d7d52;
+      --green-bg: #edf7f2;
+      --red: #c0392b;
+      --red-bg: #fdf0ee;
+      --blue: #2457a8;
+      --blue-bg: #eef2fc;
+      --accent: #1a1a18;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== AUTH PAGE ===== */
+    #auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .auth-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+
+    .auth-logo span { color: var(--green); }
+
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.6rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .error-msg {
+      background: var(--red-bg);
+      color: var(--red);
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    /* ===== MAIN APP ===== */
+    #app-page { display: none; }
+
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo { font-size: 1.2rem; font-weight: 600; }
+    .logo span { color: var(--green); }
+
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+
+    #user-name { font-size: 0.9rem; color: var(--muted); }
+
+    .btn-sm {
+      padding: 0.4rem 1rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .btn-sm:hover { background: var(--bg); }
+
+    main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .summary-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-amount {
+      font-size: 1.8rem;
+      font-weight: 600;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .summary-amount.green { color: var(--green); }
+    .summary-amount.red { color: var(--red); }
+
+    /* Main content grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 1.5rem;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .panel-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    /* Add form */
+    .type-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .type-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .type-btn.active-income { background: var(--green-bg); color: var(--green); font-weight: 500; }
+    .type-btn.active-expense { background: var(--red-bg); color: var(--red); font-weight: 500; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+    .btn-add {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    .btn-add:hover { opacity: 0.85; }
+
+    /* Transactions list */
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .transaction-item:last-child { border-bottom: none; }
+
+    .cat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .cat-icon.income { background: var(--green-bg); }
+    .cat-icon.expense { background: var(--red-bg); }
+
+    .tx-info { flex: 1; min-width: 0; }
+
+    .tx-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tx-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    .tx-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .tx-amount.green { color: var(--green); }
+    .tx-amount.red { color: var(--red); }
+
+    .tx-delete {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.2rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .transaction-item:hover .tx-delete { opacity: 1; }
+
+    /* Chart */
+    .chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-row select {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .summary-grid { grid-template-columns: 1fr; }
+      .content-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+      header { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== AUTH PAGE ===== -->
+<div id="auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">💰 Expense<span>Tracker</span></div>
+    <p style="color:var(--muted);font-size:0.9rem;margin-top:0.3rem;">Track your money, stress less.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="auth-error" class="error-msg"></div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••"/>
+      </div>
+      <button class="btn" onclick="login()">Login</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your name"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="At least 6 characters"/>
+      </div>
+      <button class="btn" onclick="register()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app-page">
+  <header>
+    <div class="logo">💰 Expense<span>Tracker</span></div>
+    <div class="header-right">
+      <span id="user-name"></span>
+      <button class="btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Summary -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Total Balance</div>
+        <div class="summary-amount" id="balance">₹0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Income</div>
+        <div class="summary-amount green" id="total-income">₹0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Expenses</div>
+        <div class="summary-amount red" id="total-expense">₹0</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Left: Add form + Transactions -->
+      <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+        <!-- Add Transaction -->
+        <div class="panel">
+          <div class="panel-title">Add Transaction</div>
+          <div class="type-toggle">
+            <button class="type-btn active-income" id="btn-income" onclick="setType('income')">+ Income</button>
+            <button class="type-btn" id="btn-expense" onclick="setType('expense')">− Expense</button>
+          </div>
+
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="tx-title" placeholder="e.g. Lunch, Salary..."/>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Amount (₹)</label>
+              <input type="number" id="tx-amount" placeholder="0" min="1"/>
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="tx-date"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Category</label>
+            <select id="tx-category">
+              <option value="">Select category</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Note (optional)</label>
+            <input type="text" id="tx-note" placeholder="Any extra details..."/>
+          </div>
+
+          <button class="btn-add" onclick="addTransaction()">Add Transaction</button>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="panel">
+          <div class="panel-title">Recent Transactions</div>
+          <div class="filter-row">
+            <select id="filter-type" onchange="loadExpenses()">
+              <option value="">All Types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <select id="filter-category" onchange="loadExpenses()">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <div id="transactions-list"><div class="empty-state">No transactions yet. Add one above!</div></div>
+        </div>
+      </div>
+
+      <!-- Right: Chart -->
+      <div>
+        <div class="panel">
+          <div class="panel-title">Spending by Category</div>
+          <div class="chart-wrap">
+            <canvas id="pie-chart"></canvas>
+          </div>
+          <div id="chart-legend"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ===== CONFIG =====
+  // Change this to your deployed backend URL when hosting
+  const API = 'http://localhost:3000/api';
+
+  const CATEGORIES = {
+    income:  ['salary','freelance','other'],
+    expense: ['food','transport','rent','education','entertainment','shopping','health','other']
+  };
+
+  const CAT_EMOJI = {
+    food:'🍕', transport:'🚗', rent:'🏠', education:'📚',
+    entertainment:'🎮', shopping:'🛍️', health:'💊',
+    salary:'💼', freelance:'💻', other:'📦'
+  };
+
+  const COLORS = ['#2d7d52','#2457a8','#c0392b','#e67e22','#8e44ad','#16a085','#2c3e50','#e74c3c','#f39c12','#27ae60'];
+
+  let token = localStorage.getItem('token');
+  let userName = localStorage.getItem('userName');
+  let currentType = 'income';
+  let pieChart = null;
+
+  // ===== INIT =====
+  window.onload = () => {
+    if (token) showApp();
+    else showAuth();
+
+    // Set today's date default
+    document.getElementById('tx-date').valueAsDate = new Date();
+  };
+
+  // ===== AUTH =====
+  function showAuth() {
+    document.getElementById('auth-page').style.display = 'flex';
+    document.getElementById('app-page').style.display = 'none';
+  }
+
+  function showApp() {
+    document.getElementById('auth-page').style.display = 'none';
+    document.getElementById('app-page').style.display = 'block';
+    document.getElementById('user-name').textContent = 'Hi, ' + userName;
+    setType('income');
+    loadExpenses();
+    loadSummary();
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach((t,i) => {
+      t.classList.toggle('active', (tab==='login' && i===0)||(tab==='register' && i===1));
+    });
+    document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+    document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return showError('Please fill in all fields');
+
+    try {
+      const res = await fetch(API + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return showError(data.message);
+
+      token = data.token;
+      userName = data.name;
+      localStorage.setItem('token', token);
+      localStorage.setItem('userName', userName);
+      showApp();
+    } catch {
+      showError('Cannot connect to server. Make sure backend is running.');
+    }
+  }
+
+  async function register() {
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) return showError('Please fill in all fields');
+    if (password.length < 6) return showError('Password must be at least 6 characters');
+
+    try {
+      const res = await fetch(API + '/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return showError(data.message);
+
+      token = data.token;
+      userName = data.name;
+      localStorage.setItem('token', token);
+      localStorage.setItem('userName', userName);
+      showApp();
+    } catch {
+      showError('Cannot connect to server. Make sure backend is running.');
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    token = null;
+    showAuth();
+  }
+
+  // ===== TYPE TOGGLE =====
+  function setType(type) {
+    currentType = type;
+    document.getElementById('btn-income').className = 'type-btn' + (type==='income' ? ' active-income' : '');
+    document.getElementById('btn-expense').className = 'type-btn' + (type==='expense' ? ' active-expense' : '');
+
+    const select = document.getElementById('tx-category');
+    select.innerHTML = '<option value="">Select category</option>';
+    CATEGORIES[type].forEach(c => {
+      select.innerHTML += `<option value="${c}">${CAT_EMOJI[c]} ${c.charAt(0).toUpperCase()+c.slice(1)}</option>`;
+    });
+
+    const filterCat = document.getElementById('filter-category');
+    filterCat.innerHTML = '<option value="">All Categories</option>';
+    [...CATEGORIES.income, ...CATEGORIES.expense].filter((v,i,a)=>a.indexOf(v)===i).forEach(c => {
+      filterCat.innerHTML += `<option value="${c}">${CAT_EMOJI[c]} ${c.charAt(0).toUpperCase()+c.slice(1)}</option>`;
+    });
+  }
+
+  // ===== LOAD EXPENSES =====
+  async function loadExpenses() {
+    const type = document.getElementById('filter-type').value;
+    const category = document.getElementById('filter-category').value;
+    let url = API + '/expenses?';
+    if (type) url += 'type=' + type + '&';
+    if (category) url += 'category=' + category;
+
+    try {
+      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      renderTransactions(data);
+    } catch { console.error('Failed to load expenses'); }
+  }
+
+  function renderTransactions(list) {
+    const el = document.getElementById('transactions-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state">No transactions found.</div>';
+      return;
+    }
+    el.innerHTML = list.map(t => `
+      <div class="transaction-item">
+        <div class="cat-icon ${t.type}">${CAT_EMOJI[t.category] || '📦'}</div>
+        <div class="tx-info">
+          <div class="tx-title">${t.title}</div>
+          <div class="tx-meta">${t.category} · ${new Date(t.date).toLocaleDateString('en-IN')}</div>
+        </div>
+        <div class="tx-amount ${t.type === 'income' ? 'green' : 'red'}">
+          ${t.type === 'income' ? '+' : '-'}₹${t.amount.toLocaleString('en-IN')}
+        </div>
+        <button class="tx-delete" onclick="deleteTransaction('${t._id}')" title="Delete">✕</button>
+      </div>
+    `).join('');
+  }
+
+  // ===== SUMMARY + CHART =====
+  async function loadSummary() {
+    try {
+      const res = await fetch(API + '/expenses/summary', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+
+      document.getElementById('total-income').textContent = '₹' + data.totalIncome.toLocaleString('en-IN');
+      document.getElementById('total-expense').textContent = '₹' + data.totalExpense.toLocaleString('en-IN');
+      const balance = data.balance;
+      const balEl = document.getElementById('balance');
+      balEl.textContent = (balance < 0 ? '-' : '') + '₹' + Math.abs(balance).toLocaleString('en-IN');
+      balEl.style.color = balance < 0 ? 'var(--red)' : 'var(--text)';
+
+      renderChart(data.categoryBreakdown);
+    } catch { console.error('Failed to load summary'); }
+  }
+
+  function renderChart(breakdown) {
+    const labels = Object.keys(breakdown);
+    const values = Object.values(breakdown);
+
+    if (pieChart) pieChart.destroy();
+
+    if (!labels.length) {
+      document.getElementById('chart-legend').innerHTML = '<div class="empty-state">Add expenses to see chart</div>';
+      return;
+    }
+
+    const ctx = document.getElementById('pie-chart').getContext('2d');
+    pieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: COLORS.slice(0, labels.length),
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Custom legend
+    document.getElementById('chart-legend').innerHTML = labels.map((l, i) => `
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;font-size:0.85rem;">
+        <span style="width:12px;height:12px;border-radius:3px;background:${COLORS[i]};display:inline-block;flex-shrink:0;"></span>
+        <span style="flex:1;color:var(--muted);">${CAT_EMOJI[l]||''} ${l}</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:500;">₹${values[i].toLocaleString('en-IN')}</span>
+      </div>
+    `).join('');
+  }
+
+  // ===== ADD TRANSACTION =====
+  async function addTransaction() {
+    const title = document.getElementById('tx-title').value.trim();
+    const amount = parseFloat(document.getElementById('tx-amount').value);
+    const date = document.getElementById('tx-date').value;
+    const category = document.getElementById('tx-category').value;
+    const note = document.getElementById('tx-note').value.trim();
+
+    if (!title || !amount || !category) return alert('Please fill in Title, Amount, and Category');
+    if (amount <= 0) return alert('Amount must be greater than 0');
+
+    try {
+      const res = await fetch(API + '/expenses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ title, amount, type: currentType, category, note, date })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(err.message);
+      }
+
+      // Reset form
+      document.getElementById('tx-title').value = '';
+      document.getElementById('tx-amount').value = '';
+      document.getElementById('tx-note').value = '';
+      document.getElementById('tx-date').valueAsDate = new Date();
+      document.getElementById('tx-category').value = '';
+
+      loadExpenses();
+      loadSummary();
+    } catch { alert('Failed to add transaction. Check if backend is running.'); }
+  }
+
+  // ===== DELETE =====
+  async function deleteTransaction(id) {
+    if (!confirm('Delete this transaction?')) return;
+    try {
+      await fetch(API + '/expenses/' + id, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      loadExpenses();
+      loadSummary();
+    } catch { alert('Failed to delete.'); }
+  }
+</script>
+</body>
+</html>
