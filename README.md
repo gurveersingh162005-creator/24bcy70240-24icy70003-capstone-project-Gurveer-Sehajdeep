@@ -1,38 +1,63 @@
 #  Expense Tracker
 
-A simple and efficient Expense Tracker web application that helps users manage their daily expenses and track their spending easily.
+A full-stack Expense Tracker web application that allows users to manage their income and expenses, track financial activity, and maintain balance efficiently.
 
-🔗 **Live Demo:** https://capstone-project-fs.vercel.app/
+🔗 **Live App:** https://capstone-project-fs.vercel.app/
+
+---
+
+##  Project Overview
+
+This project was developed as part of a capstone project. It provides a complete solution for tracking personal finances with secure authentication and real-time data handling.
 
 ---
 
 ##  Features
 
-* Add and manage expenses
-* Track income and balance
-* Real-time updates
-* Simple and clean UI
-* Responsive design
+* User Authentication (Register & Login)
+* Add, edit, and delete transactions
+* Track income and expenses separately
+* Real-time balance calculation
+* Persistent data storage using database
+* Responsive and clean UI
 
 ---
 
 ##  Tech Stack
 
+**Frontend:**
+
 * HTML
 * CSS
 * JavaScript
-* Deployment: Vercel
+
+**Backend:**
+
+* Node.js
+* Express.js
+
+**Database:**
+
+* MongoDB
+
+**Deployment:**
+
+* Vercel
 
 ---
 
 ##  Project Structure
 
-```
-expense-tracker/
-│── index.html
-│── style.css
-│── script.js
-│── README.md
+```bash id="4v6t7n"
+.
+├── frontend/
+├── backend/
+│   ├── routes/
+│   ├── models/
+│   └── server.js
+├── public/
+├── package.json
+└── README.md
 ```
 
 ---
@@ -40,21 +65,58 @@ expense-tracker/
 ##  How to Run Locally
 
 1. Clone the repository
+   
+2. Navigate into the project folder:
 
-2. Open the folder
+```bash id="fj8odt"
+cd 24bcy70240-24icy70003-capstone-project-Gurveer-Sehajdeep
+```
 
-3. Run the project:
+3. Install dependencies:
 
-* Open `index.html` in your browser
+```bash id="0qvxaf"
+npm install
+```
+
+4. Set up environment variables:
+   Create a `.env` file and add:
+
+```env id="8rnhxj"
+MONGO_URI=your_mongodb_connection_string
+PORT=5000
+```
+
+5. Run the server:
+
+```bash id="l2t3rs"
+npm start
+```
+
+6. Open in browser:
+
+```id="rztqlf"
+http://localhost:5000
+```
+
+---
+
+##  Environment Variables
+
+* `MONGO_URI` → MongoDB connection string
+* `PORT` → Server port
 
 ---
 
 ##  Future Improvements
 
-* Add authentication (login/signup)
-* Add charts for expense analysis
-* Export data (PDF/Excel)
+* Data visualization (charts & analytics)
+* Export reports (PDF/Excel)
+* Advanced filtering & search
+* Mobile app version
 
 ---
 
+##  Authors
 
+* Gurveer Singh
+* Sehajdeep
