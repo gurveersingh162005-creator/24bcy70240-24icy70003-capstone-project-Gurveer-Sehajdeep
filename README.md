@@ -39,11 +39,7 @@ expense-tracker/
 
 ##  How to Run Locally
 
-1. Clone the repository:
-
-```
-git clone https://github.com/your-username/expense-tracker.git
-```
+1. Clone the repository
 
 2. Open the folder
 
